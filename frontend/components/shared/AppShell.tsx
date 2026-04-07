@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
+import Logo from "@/components/shared/Logo";
 import {
   LayoutDashboard,
   Building2,
@@ -71,8 +72,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className="flex w-[240px] flex-col border-r border-nav-border bg-nav-bg">
         <div className="px-5 py-5">
-          <Link href="/" className="text-lg font-bold text-text-primary">
-            AutoTennant
+          <Link href="/">
+            <Logo variant="light" />
           </Link>
         </div>
 

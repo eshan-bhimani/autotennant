@@ -595,6 +595,196 @@ function HubSpokeDiagram() {
   );
 }
 
+/* ─── Social Proof / Testimonials ─── */
+
+const testimonials = [
+  {
+    quote: "We went from juggling 5 different tools to just AutoTenant. Screening, leases, payments — all in one place.",
+    name: "Marcus T.",
+    role: "Property Manager",
+    initials: "MT",
+    color: "bg-primary",
+  },
+  {
+    quote: "AutoTenant feels like hiring an operations team overnight. We scaled from 8 to 35 units without adding staff.",
+    name: "Sofia R.",
+    role: "Real Estate Investor",
+    initials: "SR",
+    color: "bg-violet-500",
+  },
+  {
+    quote: "A tenant applied at 11pm — by 8am I had a full background check, credit report, and AI score. Game changer.",
+    name: "David K.",
+    role: "Independent Landlord",
+    initials: "DK",
+    color: "bg-emerald-500",
+  },
+];
+
+function SocialProofSection() {
+  return (
+    <section id="testimonials" className="overflow-hidden bg-[#0B1628] px-6 py-[100px] sm:px-10">
+      <motion.div
+        className="mx-auto max-w-6xl"
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease }}
+      >
+        {/* Heading */}
+        <div className="text-center">
+          <h2
+            className="font-sans font-extrabold leading-[1.1] tracking-[-0.03em] text-white"
+            style={{ fontSize: "clamp(36px, 5vw, 56px)" }}
+          >
+            Trusted by landlords everywhere
+          </h2>
+          <p className="mx-auto mt-4 max-w-[560px] text-base leading-relaxed text-white/50">
+            Real results from real property managers using AutoTenant.
+          </p>
+        </div>
+
+        {/* Stats row */}
+        <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Rating card */}
+          <motion.div
+            className="rounded-[20px] border border-white/10 bg-white/[0.04] p-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease }}
+          >
+            <div className="flex items-baseline gap-1">
+              <span className="text-[48px] font-bold text-white">4.9</span>
+              <span className="text-lg text-white/40">/5</span>
+            </div>
+            <div className="mt-2 flex gap-1">
+              {[...Array(5)].map((_, i) => (
+                <svg key={i} className="h-5 w-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+            {/* Avatar stack */}
+            <div className="mt-6 flex items-center">
+              <div className="flex -space-x-2">
+                {["bg-primary", "bg-violet-500", "bg-emerald-500", "bg-amber-500"].map((bg, i) => (
+                  <div key={i} className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0B1628] text-[10px] font-bold text-white ${bg}`}>
+                    {["MT", "SR", "DK", "JL"][i]}
+                  </div>
+                ))}
+              </div>
+              <span className="ml-2 rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-0.5 text-xs font-semibold text-white/60">
+                +2,400
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-white/40">average rating across all users</p>
+          </motion.div>
+
+          {/* Testimonial card */}
+          <motion.div
+            className="rounded-[20px] border border-white/10 bg-white/[0.04] p-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.5, ease }}
+          >
+            <p className="text-lg font-medium leading-relaxed text-white/80">
+              &ldquo;{testimonials[0].quote}&rdquo;
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white ${testimonials[0].color}`}>
+                {testimonials[0].initials}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">{testimonials[0].name}</p>
+                <p className="text-xs text-white/40">{testimonials[0].role}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Stat card */}
+          <motion.div
+            className="rounded-[20px] border border-white/10 bg-white/[0.04] p-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.5, ease }}
+          >
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[48px] font-bold text-white">73</span>
+              <span className="text-2xl font-bold text-primary">%</span>
+            </div>
+            <p className="mt-1 text-sm text-white/40">faster time-to-lease on average</p>
+          </motion.div>
+        </div>
+
+        {/* Bottom row — more testimonials + stat */}
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Testimonial 2 */}
+          <motion.div
+            className="rounded-[20px] border border-white/10 bg-white/[0.04] p-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.5, ease }}
+          >
+            <p className="text-lg font-medium leading-relaxed text-white/80">
+              &ldquo;{testimonials[1].quote}&rdquo;
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white ${testimonials[1].color}`}>
+                {testimonials[1].initials}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">{testimonials[1].name}</p>
+                <p className="text-xs text-white/40">{testimonials[1].role}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Middle stat */}
+          <motion.div
+            className="flex flex-col items-center justify-center rounded-[20px] border border-white/10 bg-white/[0.04] p-8 text-center"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.5, ease }}
+          >
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[48px] font-bold text-white">5</span>
+              <span className="text-2xl font-bold text-primary">min</span>
+            </div>
+            <p className="mt-1 text-sm text-white/40">average response time to applicants</p>
+          </motion.div>
+
+          {/* Testimonial 3 */}
+          <motion.div
+            className="rounded-[20px] border border-white/10 bg-white/[0.04] p-8"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.5, ease }}
+          >
+            <p className="text-lg font-medium leading-relaxed text-white/80">
+              &ldquo;{testimonials[2].quote}&rdquo;
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white ${testimonials[2].color}`}>
+                {testimonials[2].initials}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">{testimonials[2].name}</p>
+                <p className="text-xs text-white/40">{testimonials[2].role}</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
 /* ─── How It Works ─── */
 
 function HowItWorksSection() {
@@ -698,8 +888,9 @@ const tiers = [
       </svg>
     ),
     name: "Starter",
-    monthly: 29,
-    annual: 17,
+    slug: "starter",
+    monthly: 99,
+    annual: 59,
     unit: "property",
     range: "1–3 Properties",
     highlight: false,
@@ -711,8 +902,9 @@ const tiers = [
       </svg>
     ),
     name: "Growth",
-    monthly: 22,
-    annual: 13,
+    slug: "growth",
+    monthly: 79,
+    annual: 47,
     unit: "property",
     range: "4–20 Properties",
     highlight: true,
@@ -724,8 +916,9 @@ const tiers = [
       </svg>
     ),
     name: "Portfolio",
-    monthly: 15,
-    annual: 9,
+    slug: "portfolio",
+    monthly: 49,
+    annual: 29,
     unit: "property",
     range: "21+ Properties",
     highlight: false,
@@ -745,6 +938,27 @@ const pricingFeatures = [
 
 function PricingSection() {
   const [annual, setAnnual] = useState(true);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+
+  const handleCheckout = async (slug: string) => {
+    setLoadingTier(slug);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: slug, billing: annual ? "annual" : "monthly" }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        // Stripe not configured — fall back to registration
+        window.location.href = `/register?plan=${slug}&billing=${annual ? "annual" : "monthly"}`;
+      }
+    } catch {
+      window.location.href = `/register?plan=${slug}&billing=${annual ? "annual" : "monthly"}`;
+    }
+  };
 
   return (
     <section id="pricing" className="bg-[#0B1628] px-6 py-[100px] sm:px-10">
@@ -838,6 +1052,17 @@ function PricingSection() {
                       -40%
                     </span>
                   )}
+                  <button
+                    onClick={() => handleCheckout(tier.slug)}
+                    disabled={loadingTier === tier.slug}
+                    className={`mt-4 w-full rounded-btn py-2.5 text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 ${
+                      tier.highlight
+                        ? "bg-primary text-white shadow-[0_4px_14px_rgba(79,124,232,0.30)]"
+                        : "border border-white/20 bg-white/10 text-white hover:bg-white/15"
+                    }`}
+                  >
+                    {loadingTier === tier.slug ? "Redirecting..." : "Select Plan"}
+                  </button>
                 </motion.div>
               );
             })}
@@ -959,6 +1184,13 @@ function StickyNavbar() {
             Features
           </a>
           <a
+            href="#testimonials"
+            className="text-sm font-medium transition-colors duration-300"
+            style={{ color: scrolled ? "#6B7280" : "rgba(255,255,255,0.8)" }}
+          >
+            Testimonials
+          </a>
+          <a
             href="#how-it-works"
             className="text-sm font-medium transition-colors duration-300"
             style={{ color: scrolled ? "#6B7280" : "rgba(255,255,255,0.8)" }}
@@ -1012,6 +1244,7 @@ export default function HomePage() {
       <FloatingTagsSection />
       <DashboardMockupSection />
       <HubSpokeDiagram />
+      <SocialProofSection />
       <HowItWorksSection />
       <PricingSection />
       <FAQSection />
