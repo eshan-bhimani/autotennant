@@ -9,9 +9,15 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const session = await getSession();
-  if (session?.accessToken) {
-    config.headers.Authorization = `Bearer ${session.accessToken}`;
+  // Try localStorage first (email/password login), then NextAuth session (Google login)
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    const session = await getSession();
+    if (session?.accessToken) {
+      config.headers.Authorization = `Bearer ${session.accessToken}`;
+    }
   }
   return config;
 });
@@ -29,9 +35,12 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
         const { access_token } = res.data;
+        localStorage.setItem("access_token", access_token);
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return api(originalRequest);
       } catch {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject(error);
       }

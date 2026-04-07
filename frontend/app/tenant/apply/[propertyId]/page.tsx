@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSubmitApplication } from "@/hooks/useTenantApplications";
 import api from "@/lib/api";
-import type { PropertyResponse } from "@/types/api";
+import type { PropertyResponse, PropertySearchResponse } from "@/types/api";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { formatCurrency } from "@/lib/utils";
@@ -33,7 +33,7 @@ export default function ApplyPage() {
   const { data: property, isLoading: propertyLoading } = useQuery({
     queryKey: ["publicProperty", propertyId],
     queryFn: () =>
-      api.get<PropertyResponse>(`/properties/search`, { params: { q: propertyId } }).then((r) => {
+      api.get<PropertySearchResponse>(`/properties/search`, { params: { q: propertyId } }).then((r) => {
         const found = r.data.items?.find((p: PropertyResponse) => p.id === propertyId);
         return found ?? null;
       }),
