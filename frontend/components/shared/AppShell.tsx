@@ -15,6 +15,8 @@ import {
   Settings,
   Search,
   ClipboardList,
+  CreditCard,
+  MessageSquare,
 } from "lucide-react";
 
 interface NavItem {
@@ -29,6 +31,8 @@ const landlordNav: NavItem[] = [
   { label: "Applications", href: "/landlord/applications", icon: <ClipboardList size={18} /> },
   { label: "Viewings", href: "/landlord/viewings", icon: <Eye size={18} /> },
   { label: "Leases", href: "/landlord/leases", icon: <ScrollText size={18} /> },
+  { label: "Payments", href: "/landlord/payments", icon: <CreditCard size={18} /> },
+  { label: "Messages", href: "/landlord/messages", icon: <MessageSquare size={18} /> },
   { label: "Settings", href: "/landlord/settings", icon: <Settings size={18} /> },
 ];
 
@@ -37,6 +41,8 @@ const tenantNav: NavItem[] = [
   { label: "My Applications", href: "/tenant/applications", icon: <ClipboardList size={18} /> },
   { label: "Viewings", href: "/tenant/viewings", icon: <Eye size={18} /> },
   { label: "My Leases", href: "/tenant/leases", icon: <ScrollText size={18} /> },
+  { label: "Payments", href: "/tenant/payments", icon: <CreditCard size={18} /> },
+  { label: "Messages", href: "/tenant/messages", icon: <MessageSquare size={18} /> },
   { label: "Settings", href: "/tenant/settings", icon: <Settings size={18} /> },
 ];
 

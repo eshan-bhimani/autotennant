@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import uuid
 from datetime import datetime, timezone
 
 import structlog
@@ -11,11 +12,13 @@ from app.cache import get_cache
 from app.config import settings
 from app.database import get_db
 from app.models.application import Application
+from app.models.landlord_profile import LandlordProfile
 from app.models.lease import Lease
 from app.models.property import Property
+from app.models.rent_payment import RentPayment
 from app.models.tenant_profile import TenantProfile
 from app.schemas.application import WebhookResponse
-from app.services import scoring_service
+from app.services import scoring_service, stripe_service
 
 logger = structlog.get_logger()
 
@@ -148,3 +151,99 @@ async def docusign_webhook(
         new_status=new_status,
     )
     return WebhookResponse(status="ok", message=f"Lease status updated to {new_status}")
+
+
+@router.post("/stripe", response_model=WebhookResponse)
+async def stripe_webhook(
+    request: Request,
+    stripe_signature: str = Header(..., alias="Stripe-Signature"),
+    db: AsyncSession = Depends(get_db),
+) -> WebhookResponse:
+    payload = await request.body()
+    try:
+        event = stripe_service.verify_webhook(payload, stripe_signature)
+    except Exception as exc:
+        logger.warning("stripe_webhook_bad_signature", error=str(exc))
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    event_type = event["type"]
+    data = event["data"]["object"]
+
+    if event_type == "checkout.session.completed":
+        metadata = data.get("metadata") or {}
+        rent_payment_id = metadata.get("rent_payment_id")
+        pi_id = data.get("payment_intent")
+        if rent_payment_id:
+            try:
+                payment = await db.get(RentPayment, uuid.UUID(rent_payment_id))
+            except ValueError:
+                payment = None
+            if payment and isinstance(pi_id, str):
+                payment.stripe_payment_intent_id = pi_id
+                await db.commit()
+        return WebhookResponse(status="ok", message="Session completed recorded")
+
+    if event_type in ("payment_intent.succeeded", "payment_intent.payment_failed"):
+        pi_id = data["id"]
+        metadata = data.get("metadata") or {}
+        rent_payment_id = metadata.get("rent_payment_id")
+
+        payment: RentPayment | None = None
+        if rent_payment_id:
+            try:
+                payment = await db.get(RentPayment, uuid.UUID(rent_payment_id))
+            except ValueError:
+                payment = None
+        if not payment:
+            result = await db.execute(
+                select(RentPayment).where(
+                    RentPayment.stripe_payment_intent_id == pi_id
+                )
+            )
+            payment = result.scalar_one_or_none()
+
+        if not payment:
+            logger.warning("stripe_webhook_unknown_intent", payment_intent_id=pi_id)
+            return WebhookResponse(status="ok", message="Unknown intent")
+
+        if event_type == "payment_intent.succeeded":
+            payment.status = "PAID"
+            payment.paid_at = datetime.now(timezone.utc)
+            logger.info(
+                "rent_payment_succeeded",
+                rent_payment_id=str(payment.id),
+                amount=float(payment.amount),
+            )
+        else:
+            payment.status = "FAILED"
+            logger.warning(
+                "rent_payment_failed",
+                rent_payment_id=str(payment.id),
+                payment_intent_id=pi_id,
+            )
+        await db.commit()
+        return WebhookResponse(status="ok", message=f"Handled {event_type}")
+
+    if event_type == "account.updated":
+        account_id = data["id"]
+        result = await db.execute(
+            select(LandlordProfile).where(
+                LandlordProfile.stripe_connect_account_id == account_id
+            )
+        )
+        profile = result.scalar_one_or_none()
+        if profile:
+            profile.stripe_charges_enabled = bool(data.get("charges_enabled", False))
+            profile.stripe_connect_onboarded = bool(
+                data.get("details_submitted", False)
+            ) and profile.stripe_charges_enabled
+            await db.commit()
+            logger.info(
+                "stripe_account_updated",
+                account_id=account_id,
+                charges_enabled=profile.stripe_charges_enabled,
+            )
+        return WebhookResponse(status="ok", message="Account updated")
+
+    logger.info("stripe_webhook_unhandled", event_type=event_type)
+    return WebhookResponse(status="ok", message="Ignored")

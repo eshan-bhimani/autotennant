@@ -47,6 +47,10 @@ twilio==9.4.0
 # E-signature
 docusign-esign==4.0.0
 
+# Payments
+stripe==11.4.1
+python-dateutil==2.9.0.post0
+
 # Testing
 pytest==8.3.4
 pytest-asyncio==0.25.0

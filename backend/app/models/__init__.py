@@ -5,6 +5,8 @@ from app.models.property import Property
 from app.models.application import Application
 from app.models.viewing import Viewing
 from app.models.lease import Lease
+from app.models.rent_payment import RentPayment
+from app.models.message import Message, MessageThread
 
 __all__ = [
     "User",
@@ -14,4 +16,7 @@ __all__ = [
     "Application",
     "Viewing",
     "Lease",
+    "RentPayment",
+    "Message",
+    "MessageThread",
 ]

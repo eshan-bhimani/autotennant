@@ -37,7 +37,11 @@ export default function LoginPage() {
       const res = await api.post<TokenResponse>("/auth/login", data);
       localStorage.setItem("access_token", res.data.access_token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      window.location.href = "/";
+      if (res.data.user.role === "ADMIN") {
+        window.location.href = "/admin/dashboard";
+      } else {
+        window.location.href = "/";
+      }
     } catch {
       setError("Invalid email or password");
     } finally {

@@ -53,13 +53,69 @@ function RoleSelector({
 
 /* ─── Integration Logos ─── */
 
-const integrations = [
-  { name: "TransUnion", letter: "TU" },
-  { name: "DocuSign", letter: "DS" },
-  { name: "Twilio", letter: "TW" },
-  { name: "Google", letter: "G" },
-  { name: "Stripe", letter: "S" },
-  { name: "Zillow", letter: "Z" },
+const integrationLogos: { name: string; logo: React.ReactNode }[] = [
+  {
+    name: "TransUnion",
+    logo: (
+      <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
+        <rect x="6" y="12" width="28" height="16" rx="3" fill="#00A3E0" />
+        <text x="20" y="23" textAnchor="middle" fill="white" fontSize="9" fontWeight="700" fontFamily="sans-serif">TU</text>
+        <path d="M14 10 Q20 6 26 10" stroke="#00A3E0" strokeWidth="2" fill="none" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    name: "DocuSign",
+    logo: (
+      <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
+        <rect x="8" y="8" width="24" height="24" rx="4" fill="#FFD940" />
+        <path d="M16 20 L19 23 L25 16" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    name: "Twilio",
+    logo: (
+      <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
+        <circle cx="20" cy="20" r="14" fill="#F22F46" />
+        <circle cx="15.5" cy="15.5" r="2.5" fill="white" />
+        <circle cx="24.5" cy="15.5" r="2.5" fill="white" />
+        <circle cx="15.5" cy="24.5" r="2.5" fill="white" />
+        <circle cx="24.5" cy="24.5" r="2.5" fill="white" />
+      </svg>
+    ),
+  },
+  {
+    name: "Google",
+    logo: (
+      <svg viewBox="0 0 40 40" className="h-7 w-7">
+        <path d="M32.6 20.2c0-.7-.1-1.4-.2-2H20v3.8h7.1a6.1 6.1 0 01-2.6 4l4.2 3.3c2.5-2.3 3.9-5.7 3.9-9.1z" fill="#4285F4" />
+        <path d="M20 33c3.5 0 6.5-1.2 8.7-3.2l-4.2-3.3c-1.2.8-2.7 1.3-4.5 1.3-3.4 0-6.3-2.3-7.3-5.4H8.3v3.4C10.5 30.3 14.9 33 20 33z" fill="#34A853" />
+        <path d="M12.7 22.4c-.3-.8-.4-1.6-.4-2.4s.2-1.6.4-2.4v-3.4H8.3A13 13 0 007 20c0 2.1.5 4.1 1.4 5.9l4.3-3.5z" fill="#FBBC05" />
+        <path d="M20 12.6c1.9 0 3.7.7 5 1.9l3.8-3.8C26.5 8.7 23.5 7 20 7c-5.1 0-9.5 2.7-11.7 6.8l4.4 3.4c1-3.1 3.9-5.4 7.3-5.4z" fill="#EA4335" />
+      </svg>
+    ),
+  },
+  {
+    name: "Stripe",
+    logo: (
+      <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
+        <rect x="6" y="6" width="28" height="28" rx="6" fill="#635BFF" />
+        <path d="M18.5 15.5c0-1 .8-1.4 2.1-1.4 1.9 0 4.2.6 6.1 1.6V10c-2-.8-4.1-1.1-6.1-1.1-5 0-8.3 2.6-8.3 7 0 6.8 9.4 5.7 9.4 8.7 0 1.2-1 1.5-2.4 1.5-2.1 0-4.7-.9-6.8-2v5.8c2.3 1 4.6 1.4 6.8 1.4 5.1 0 8.6-2.5 8.6-7 0-7.3-9.4-6-9.4-8.8z" fill="white" />
+      </svg>
+    ),
+  },
+  {
+    name: "Zillow",
+    logo: (
+      <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
+        <rect x="6" y="6" width="28" height="28" rx="6" fill="#006AFF" />
+        <path d="M14 15 L26 15 L20 10 Z" fill="white" />
+        <rect x="15" y="17" width="10" height="13" rx="1" fill="white" />
+        <rect x="18" y="22" width="4" height="8" rx="0.5" fill="#006AFF" />
+      </svg>
+    ),
+  },
 ];
 
 function IntegrationStrip() {
@@ -74,16 +130,16 @@ function IntegrationStrip() {
         Works with your existing tools
       </p>
       <motion.div
-        className="mt-4 flex gap-3"
+        className="mt-4 flex gap-4"
         initial="hidden"
         animate="visible"
         variants={{ visible: { transition: { staggerChildren: 0.07, delayChildren: 1 } } }}
       >
-        {integrations.map((i) => (
+        {integrationLogos.map((i) => (
           <motion.div
             key={i.name}
             variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
-            className="flex h-14 w-14 items-center justify-center rounded-full text-xs font-bold text-white"
+            className="flex h-14 w-14 items-center justify-center rounded-full"
             style={{
               background: "rgba(255,255,255,0.15)",
               backdropFilter: "blur(12px)",
@@ -91,7 +147,7 @@ function IntegrationStrip() {
             }}
             title={i.name}
           >
-            {i.letter}
+            {i.logo}
           </motion.div>
         ))}
       </motion.div>

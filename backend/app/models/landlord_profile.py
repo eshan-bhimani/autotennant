@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, func
+from sqlalchemy import Boolean, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,6 +33,15 @@ class LandlordProfile(Base):
     )
     stripe_customer_id: Mapped[str | None] = mapped_column(
         String(255), nullable=True
+    )
+    stripe_connect_account_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+    stripe_connect_onboarded: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
+    )
+    stripe_charges_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
     )
 
     user: Mapped["User"] = relationship("User", back_populates="landlord_profile")

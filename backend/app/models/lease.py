@@ -52,3 +52,9 @@ class Lease(Base):
         "Property", back_populates="leases"
     )
     tenant: Mapped["TenantProfile"] = relationship("TenantProfile")
+    rent_payments: Mapped[list["RentPayment"]] = relationship(
+        "RentPayment",
+        back_populates="lease",
+        cascade="all, delete-orphan",
+        order_by="RentPayment.due_date",
+    )

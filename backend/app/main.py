@@ -70,12 +70,25 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
-    from app.routers import auth, properties, applications, viewings, leases, webhooks
+    from app.routers import (
+        admin,
+        applications,
+        auth,
+        leases,
+        messages,
+        payments,
+        properties,
+        viewings,
+        webhooks,
+    )
     app.include_router(auth.router, prefix="/auth", tags=["auth"])
     app.include_router(properties.router, prefix="/properties", tags=["properties"])
     app.include_router(applications.router, prefix="/applications", tags=["applications"])
     app.include_router(viewings.router, prefix="/viewings", tags=["viewings"])
     app.include_router(leases.router, prefix="/leases", tags=["leases"])
+    app.include_router(payments.router, prefix="/payments", tags=["payments"])
+    app.include_router(messages.router, prefix="/messages", tags=["messages"])
+    app.include_router(admin.router, prefix="/admin", tags=["admin"])
     app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 
     return app

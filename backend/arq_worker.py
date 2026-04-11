@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+from arq import cron
 from arq.connections import RedisSettings
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +12,7 @@ from app.workers.notification_worker import (
     send_score_ready,
     send_viewing_reminder,
 )
+from app.workers.payment_reminder_worker import process_rent_reminders
 from app.workers.screening_worker import run_screening
 
 
@@ -30,6 +32,11 @@ class WorkerSettings:
         send_score_ready,
         send_decision_notification,
         send_viewing_reminder,
+        process_rent_reminders,
+    ]
+    cron_jobs = [
+        # Run daily at 9am UTC
+        cron(process_rent_reminders, hour=9, minute=0, run_at_startup=False),
     ]
     on_startup = startup
     on_shutdown = shutdown

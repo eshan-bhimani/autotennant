@@ -51,6 +51,14 @@ class Settings(BaseSettings):
     docusign_account_id: str = ""
     docusign_webhook_secret: str = ""
 
+    # Stripe (Connect platform + subscription billing)
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_publishable_key: str = ""
+    stripe_platform_fee_bps: int = 150  # 1.5% platform fee on rent
+    stripe_connect_return_url: str = "http://localhost:3000/landlord/payments?onboarded=1"
+    stripe_connect_refresh_url: str = "http://localhost:3000/landlord/payments?refresh=1"
+
     # Sentry
     sentry_dsn: str = ""
 
