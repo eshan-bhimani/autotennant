@@ -1,13 +1,32 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useTenantApplications } from "@/hooks/useTenantApplications";
+import { SkeletonStatGrid } from "@/components/shared/Skeleton";
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function TenantDashboardPage() {
-  const { data } = useTenantApplications();
+  const { data, isLoading } = useTenantApplications();
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      setUserName((user.full_name || user.email || "").split(" ")[0]);
+    }
+  }, []);
+
   const applications = data?.items ?? [];
   const pending = applications.filter((a) => !["APPROVED", "REJECTED"].includes(a.status)).length;
   const approved = applications.filter((a) => a.status === "APPROVED").length;
@@ -65,64 +84,81 @@ export default function TenantDashboardPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4, ease }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <motion.h1
-            className="text-[28px] font-bold text-text-primary"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease }}
-          >
-            Dashboard
-          </motion.h1>
-          <p className="mt-1 text-sm text-text-secondary">Track your applications and find your next home.</p>
+      {/* Welcome banner */}
+      <motion.div
+        className="relative overflow-hidden rounded-[20px] bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white sm:p-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease }}
+      >
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -bottom-8 -right-20 h-32 w-32 rounded-full bg-white/5" />
+        <div className="relative z-10">
+          <h1 className="text-[28px] font-bold">
+            {getGreeting()}{userName ? `, ${userName}` : ""}
+          </h1>
+          <p className="mt-1 text-sm text-white/70">
+            Track your applications and find your next home.
+            {pending > 0 ? ` You have ${pending} application${pending > 1 ? "s" : ""} in progress.` : ""}
+          </p>
         </div>
-        <Link
-          href="/tenant/search"
-          className="inline-flex items-center gap-2 rounded-btn bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(79,124,232,0.30)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-          Search Properties
-        </Link>
-      </div>
+        <div className="relative z-10 mt-4 flex gap-3">
+          <Link
+            href="/tenant/search"
+            className="inline-flex items-center gap-2 rounded-btn bg-white/20 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+            Search Properties
+          </Link>
+          <Link
+            href="/tenant/applications"
+            className="inline-flex items-center gap-2 rounded-btn bg-white/10 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/20"
+          >
+            My Applications
+          </Link>
+        </div>
+      </motion.div>
 
       {/* Stat cards */}
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            className={`relative overflow-hidden rounded-[20px] p-6 ${
-              stat.featured
-                ? "bg-gradient-to-br " + stat.accent + " text-white"
-                : "border border-border-light bg-white"
-            }`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08, duration: 0.5, ease }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-          >
-            {stat.featured && (
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
-            )}
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-              stat.featured
-                ? "bg-white/20 text-white"
-                : "bg-gradient-to-br " + stat.accent + " text-white"
-            }`}>
-              {stat.icon}
-            </div>
-            <p className={`mt-4 text-[13px] font-medium ${stat.featured ? "text-white/70" : "text-text-secondary"}`}>
-              {stat.label}
-            </p>
-            <p className={`mt-1 text-[32px] font-bold leading-none ${stat.featured ? "text-white" : "text-text-primary"}`}>
-              {stat.value}
-            </p>
-          </motion.div>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-8"><SkeletonStatGrid count={4} /></div>
+      ) : (
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              className={`relative overflow-hidden rounded-[20px] p-6 ${
+                stat.featured
+                  ? "bg-gradient-to-br " + stat.accent + " text-white shadow-glow"
+                  : "glass-accent shadow-glass"
+              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            >
+              {stat.featured && (
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
+              )}
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                stat.featured
+                  ? "bg-white/20 text-white"
+                  : "bg-gradient-to-br " + stat.accent + " text-white"
+              }`}>
+                {stat.icon}
+              </div>
+              <p className={`mt-4 text-[13px] font-medium ${stat.featured ? "text-white/70" : "text-text-secondary"}`}>
+                {stat.label}
+              </p>
+              <p className={`mt-1 text-[32px] font-bold leading-none ${stat.featured ? "text-white" : "text-text-primary"}`}>
+                {stat.value}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* Quick actions */}
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -169,7 +205,7 @@ export default function TenantDashboardPage() {
           >
             <Link
               href={action.href}
-              className="group flex items-center gap-4 rounded-[20px] border border-border-light bg-white p-5 transition-all hover:border-primary/20 hover:shadow-[0_8px_24px_rgba(79,124,232,0.08)]"
+              className="group glass flex items-center gap-4 rounded-[20px] p-5 transition-all hover:border-primary/30 hover:shadow-card-hover"
             >
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${action.color}`}>
                 {action.icon}
@@ -215,7 +251,7 @@ export default function TenantDashboardPage() {
             {applications.slice(0, 5).map((app, i) => (
               <motion.div
                 key={app.id}
-                className="flex items-center justify-between rounded-[16px] border border-border-light bg-white p-4 transition-all hover:border-primary/20 hover:shadow-[0_4px_16px_rgba(79,124,232,0.06)]"
+                className="glass flex items-center justify-between rounded-panel p-4 transition-all hover:shadow-card-hover"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.05, duration: 0.4, ease }}

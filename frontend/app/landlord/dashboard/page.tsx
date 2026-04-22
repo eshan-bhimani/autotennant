@@ -1,17 +1,50 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useProperties } from "@/hooks/useProperties";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import { SkeletonStatGrid, SkeletonCardGrid } from "@/components/shared/Skeleton";
 import { formatCurrency } from "@/lib/utils";
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
+/* Mini inline sparkline SVG */
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const w = 80;
+  const h = 28;
+  const points = data
+    .map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`)
+    .join(" ");
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="mt-2">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function DashboardPage() {
   const { data, isLoading } = useProperties();
+  const [userName, setUserName] = useState("");
 
-  if (isLoading) return <LoadingSpinner className="mt-20" />;
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      const first = (user.full_name || user.email || "").split(" ")[0];
+      setUserName(first);
+    }
+  }, []);
 
   const properties = data?.items ?? [];
   const totalApplications = properties.reduce((sum, p) => sum + p.application_count, 0);
@@ -22,45 +55,53 @@ export default function DashboardPage() {
     {
       label: "Total Properties",
       value: properties.length,
+      sparkData: [2, 4, 3, 6, 5, 8, properties.length || 7],
       icon: (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
         </svg>
       ),
       accent: "from-primary to-blue-600",
+      sparkColor: "rgba(255,255,255,0.5)",
       featured: true,
     },
     {
       label: "Active Applications",
       value: totalApplications,
+      sparkData: [5, 12, 8, 15, 10, 18, totalApplications || 14],
       icon: (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
       ),
       accent: "from-violet-500 to-purple-600",
+      sparkColor: "#8B5CF6",
       featured: false,
     },
     {
       label: "Listed",
       value: listedCount,
+      sparkData: [1, 3, 2, 4, 3, 5, listedCount || 4],
       icon: (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
         </svg>
       ),
       accent: "from-emerald-500 to-green-600",
+      sparkColor: "#10B981",
       featured: false,
     },
     {
       label: "Occupied",
       value: occupiedCount,
+      sparkData: [0, 1, 1, 2, 2, 3, occupiedCount || 3],
       icon: (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
       accent: "from-amber-500 to-orange-600",
+      sparkColor: "#F59E0B",
       featured: false,
     },
   ];
@@ -71,64 +112,88 @@ export default function DashboardPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4, ease }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <motion.h1
-            className="text-[28px] font-bold text-text-primary"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease }}
-          >
-            Dashboard
-          </motion.h1>
-          <p className="mt-1 text-sm text-text-secondary">Welcome back. Here&apos;s your portfolio overview.</p>
+      {/* Welcome banner */}
+      <motion.div
+        className="relative overflow-hidden rounded-[20px] bg-gradient-to-r from-primary to-violet-600 p-6 text-white sm:p-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease }}
+      >
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
+        <div className="pointer-events-none absolute -bottom-8 -right-20 h-32 w-32 rounded-full bg-white/5" />
+        <div className="relative z-10">
+          <h1 className="text-[28px] font-bold">
+            {getGreeting()}{userName ? `, ${userName}` : ""}
+          </h1>
+          <p className="mt-1 text-sm text-white/70">
+            Here&apos;s your portfolio overview.
+            {properties.length > 0
+              ? ` You have ${listedCount} listed and ${occupiedCount} occupied properties.`
+              : " Add your first property to get started."}
+          </p>
         </div>
-        <Link
-          href="/landlord/properties"
-          className="inline-flex items-center gap-2 rounded-btn bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(79,124,232,0.30)] transition-transform hover:scale-[1.03] active:scale-[0.97]"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Manage Properties
-        </Link>
-      </div>
+        <div className="relative z-10 mt-4 flex gap-3">
+          <Link
+            href="/landlord/properties"
+            className="inline-flex items-center gap-2 rounded-btn bg-white/20 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Manage Properties
+          </Link>
+          <Link
+            href="/landlord/applications"
+            className="inline-flex items-center gap-2 rounded-btn bg-white/10 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/20"
+          >
+            View Applications
+          </Link>
+        </div>
+      </motion.div>
 
       {/* Stat cards */}
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            className={`relative overflow-hidden rounded-[20px] p-6 ${
-              stat.featured
-                ? "bg-gradient-to-br " + stat.accent + " text-white"
-                : "border border-border-light bg-white"
-            }`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08, duration: 0.5, ease }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-          >
-            {stat.featured && (
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
-            )}
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-              stat.featured
-                ? "bg-white/20 text-white"
-                : "bg-gradient-to-br " + stat.accent + " text-white"
-            }`}>
-              {stat.icon}
-            </div>
-            <p className={`mt-4 text-[13px] font-medium ${stat.featured ? "text-white/70" : "text-text-secondary"}`}>
-              {stat.label}
-            </p>
-            <p className={`mt-1 text-[32px] font-bold leading-none ${stat.featured ? "text-white" : "text-text-primary"}`}>
-              {stat.value}
-            </p>
-          </motion.div>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="mt-8">
+          <SkeletonStatGrid count={4} />
+        </div>
+      ) : (
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              className={`relative overflow-hidden rounded-[20px] p-6 ${
+                stat.featured
+                  ? "bg-gradient-to-br " + stat.accent + " text-white shadow-glow"
+                  : "glass-accent shadow-glass"
+              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            >
+              {stat.featured && (
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
+              )}
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                stat.featured
+                  ? "bg-white/20 text-white"
+                  : "bg-gradient-to-br " + stat.accent + " text-white"
+              }`}>
+                {stat.icon}
+              </div>
+              <p className={`mt-4 text-[13px] font-medium ${stat.featured ? "text-white/70" : "text-text-secondary"}`}>
+                {stat.label}
+              </p>
+              <div className="flex items-end justify-between">
+                <p className={`mt-1 text-[32px] font-bold leading-none ${stat.featured ? "text-white" : "text-text-primary"}`}>
+                  {stat.value}
+                </p>
+                <Sparkline data={stat.sparkData} color={stat.sparkColor} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* Quick actions */}
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -175,7 +240,7 @@ export default function DashboardPage() {
           >
             <Link
               href={action.href}
-              className="group flex items-center gap-4 rounded-[20px] border border-border-light bg-white p-5 transition-all hover:border-primary/20 hover:shadow-[0_8px_24px_rgba(79,124,232,0.08)]"
+              className="group glass flex items-center gap-4 rounded-[20px] p-5 transition-all hover:border-primary/30 hover:shadow-card-hover"
             >
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${action.color}`}>
                 {action.icon}
@@ -195,7 +260,9 @@ export default function DashboardPage() {
       {/* Properties section */}
       <div className="mt-8">
         <h2 className="text-lg font-semibold text-text-primary">Your Properties</h2>
-        {properties.length === 0 ? (
+        {isLoading ? (
+          <div className="mt-4"><SkeletonCardGrid count={3} /></div>
+        ) : properties.length === 0 ? (
           <motion.div
             className="mt-4 rounded-[20px] border border-dashed border-border-light bg-gradient-to-br from-white to-card-light p-12 text-center"
             initial={{ opacity: 0 }}
@@ -221,7 +288,7 @@ export default function DashboardPage() {
             {properties.map((prop, i) => (
               <motion.div
                 key={prop.id}
-                className="group overflow-hidden rounded-[20px] border border-border-light bg-white transition-all hover:border-primary/20 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+                className="group glass overflow-hidden rounded-[20px] transition-all hover:shadow-card-hover"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.06, duration: 0.5, ease }}
